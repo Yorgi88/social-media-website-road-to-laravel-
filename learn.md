@@ -194,9 +194,43 @@ so go to the single-post blade file and do the same for the footer
 
 
 -----------------------------------
-
+CONNECTING OUR APP TO A DATABASE (?SQLite)
 
 -----------------------------------
+
+in the views dir, go to the blade template file of homepage.blade
+
+change the <form action="/register" method="POST"></form> yh like that
+
+Now go to the web.php in the routes dir and set up a route of "register"
+
+Route::post('/register');  its a post request this time, not a get
+
+so what we need is to create a new controller, rememeber that last time , wwe created an ExampleController ->  so now 
+
+we need to create a UserController file , so if you remember the command, its
+
+`php artisan make:controller UserController` so in the app dir, go inside the Http dir and you will see the controller file we just created
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class UserController extends Controller
+{
+    public function register(){
+        return "<h2>Helllo you have registered</h2>";
+    }
+}
+
+so we have created the controller, now go back to the web.php file , import the controller and say:
+
+Route::post('/register', [UserController::class, "register"]);
+
+
+
 
 
 
