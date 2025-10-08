@@ -1,5 +1,10 @@
 @include('header')
 
+@auth
+@else
+
+@endauth
+
     <div class="container py-md-5">
       <div class="row align-items-center">
         <div class="col-lg-7 py-3 py-md-5">
@@ -56,9 +61,7 @@
     </div>
 
     <!-- footer begins -->
-    <footer class="border-top text-center small text-muted py-3">
-      <p class="m-0">Copyright &copy; 2022 <a href="/" class="text-muted">OurApp</a>. All rights reserved.</p>
-    </footer>
+    @include('footer')
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>

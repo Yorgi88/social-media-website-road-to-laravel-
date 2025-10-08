@@ -15,8 +15,42 @@ class UserController extends Controller
             'password' => ['required', 'min:8', 'confirmed']
         ]);
     
-        User::create($incomingFields);
-    
-        return '<h2>Registered</h2>';
+        $user = User::create($incomingFields);
+        auth()->login($user);
+        return redirect('/home')->with('success', 'Account Created!');
+    }
+
+    public function login(Request $request){
+        $incomingFields = $request->validate([
+            'login_name' => 'required',
+            'login_password' => 'required'
+        ]);
+
+        if (auth()->attempt(['name' => $incomingFields['login_name'], 'password' => $incomingFields['login_password']])) {
+            # code...
+            $request->session()->regenerate();
+            return redirect('/home')->with('success', 'You are logged in');
+        } else {
+            # code...
+            return redirect('/home')->with('error', 'Failed');
+        }
+        
+    }
+
+    public function showCorrectHomepage(){
+        if (auth()->check()) {
+            # code...
+            return view('homepage_logged');
+        } else {
+            # code...
+            return view('homepage');
+        }
+        
+    }
+
+    public function logout(){
+        auth()->logout();
+        return redirect('/home')->with('success', 'You are logged out');
     }
 }
+// note that the login_name, is from the input field in the header.blade file
