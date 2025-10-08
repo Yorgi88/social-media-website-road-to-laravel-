@@ -457,6 +457,181 @@ so go do that -> see footer.blade.php
 
 
 
+------------------------------
+Blog Posts
+enabling users to create blogs
+----------------------
+
+go to the web.php and create the route 
+
+---Route::get('/create-post', [PostController::class, "showCreatePost"]);
+and we will need to create a blog post controller -> so do that with the command
+
+so next in the postController, 
+
+create the method -> see the PostController
+
+then in the header.blade file, change the anchor tag of create post '#' to 'create-post'
+
+lets go to the Pc download folder and get the template needed
+
+also, create a blade template file:  create-post.blade.php
+
+so go to the Downloads folder and get the create-post template,, we copied the required piece to the create-post.blade file -> look at it
+
+now in the blade template update the form elem to : <form action="/create-post" method="POST">
+remember when you are performing a post req, always add @csrf beneath the form
+now create the method and the route
+
+up untill now, we stored the users in the database, remember  we did not create the users db, laravel did it for us, so now we want to create a table to store the blog post
+
+so in order to do thzt: we need to create a Model, to keep track of the users that created the post, id, title_of_post, body_of_post and so on
+
+so to create a new table type this `php artisan make:migration create_post_table`
+
+so go to the database dir, and inside it -> migrations dir and you will see the file
+
+so in the create post file, we see: 
+
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('post', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->string('title');
+            $table->longText('body');
+            // now next is a column that keeps track of user that created the post
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');;
+
+            this is like one to many relationship, i guess
+        });
+    }
+
+to make this actually take effect in the database, 
+we run in the terminal: `php artisan migrate`
+
+next in the postController -> we write the logic for it
+
+see -> PostController.php
+
+class PostController extends Controller
+{
+    public function showCreatePost(){
+        return view('create-post');
+    }
+
+    public function storeNewPost(Request $request){
+        $incomingFields = $request->validate([
+            'title' => 'required',
+            'body' => 'required'
+        ]);
+
+        // we want to strip out any html tag an attacker might take advantage of
+        $incomingFields['title'] = strip_tags($incomingFields['title']);
+        $incomingFields['body'] = strip_tags($incomingFields['body']);
+
+        $incomingFields['user_id'] = auth()->id();  //to get the userid of the poster
+    }
+}
+
+
+next we create a Model in the Models dir called Posts.php or we use the command
+
+`php artisan make:model Post`
+
+next, we still in our PostController -> lets see how we save the entry into the database
+
+so in the Controller add this to the storeNewPost method
+
+Post::create($incomingFields); -> don't forget to import it
+
+then in the Post -> in the Models dir, add this
+
+ protected $fillable = ['title', 'body', 'user_id'];
+
+ we ran into an error sayin posts table does not exist -> 
+
+ in our create_post file in the database->migrations dir go that file and change post -> posts
+
+ then run php artisan migrate:fresh to start all over ##we can re-populate  the db again
+
+ ---- Next, in the create-post blade file, we want to improve user experience, so
+ in the file, -->  <input value="{{old('title')}}" do the same for the body
+
+ next, set up the error msgs 
+
+               @error('name')
+                  <p class="m-0 small alert alert-danger shadow-sm">
+                    {{$message}}
+                  </p>
+              @enderror
+
+
+Next, it will make more sense to redirect the user to the new url of the new post
+
+so lets commence -> go to the web.php and add -> Route::get('/post/{post}', [PostController::class, "getPost"]);
+
+so go to the PostController file and make the method -> see PostController
+
+next we need to get the template, its in single-post.blade file
+
+next, how do we load the appropriate data from the db
+
+    public function getUserPost(Post $post){
+        return $post->title;
+        return view('single-post');
+       
+    }
+
+we wil pass in an argument, to get the appropriate user posts
+
+sp in the web.php it ill be like post/{post} -> tis is the arg
+
+the above getUserPost method in the arg passed -> tis is known as type hinting
+
+that $post in the arg is referring to the -
+-> Route::get('/post/{post}', [PostController::class, "getUserPost"]);
+
+its referring to the {post} here in the web.php -> they must match!
+
+Now lets pass the blog post data into our blade view
+
+-> so we say -> return view('single-post', ['post' => $post]);
+
+so go the matching blade template html file
+
+'single-page' and update accordingly
+
+passing the blogger's name to the template can be tricky so lets start
+
+in the Post.php which is in the models, create a method and say:: 
+
+    public function user(){
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+so in the blade-template file -> we say $post->user->name <= pointing to the user function
+that we created in the Post model>
+
+for the dynamic date:  {{$post->created_at->format('n/j/Y')}}
+
+for the body: {{$post->body}}
+
+Next we want to add redirect, so when the user creates a post the user gets redirected to the post he/she created
+
+so go to the PostController, in the method: storeNewPost
+
+return redirect("/post/{$newPost->id}")->with('success', 'post created successfully');
+
+
+
+
+
+
 
 
 
