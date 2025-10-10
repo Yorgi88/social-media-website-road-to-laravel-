@@ -25,3 +25,7 @@ Route::delete('/post/{post}', [PostController::class, "deletePost"])->middleware
 
 Route::get('/post/{post}/edit', [PostController::class, "viewEditForm"])->middleware('can:update,post');
 Route::put('/post/{post}', [PostController::class, "saveEdit"])->middleware('can:update,post');
+Route::get('/admin-only', function(){
+    return '<h2>Only Admins Can view This</h2>';
+})->middleware('can:visitAdminPages');
+

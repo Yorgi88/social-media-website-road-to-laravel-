@@ -942,7 +942,14 @@ so yh as an admin Robb Stark can update and delete Bob posts, try it out in fire
 copy the Bob user posts url in the firefox browser where robb stark is logged in , you will see you can edit or delete Bob posts
 
 
+-> Next we want to set up special urls that only admin can access and also allow user to change their avatar
 
+
+set up a route(admin-only) and method
+
+Route::get('/admin-only', function(){
+    return 'Admin only';
+});
 
 
 
