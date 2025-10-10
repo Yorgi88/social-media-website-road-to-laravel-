@@ -951,8 +951,127 @@ Route::get('/admin-only', function(){
     return 'Admin only';
 });
 
+go to your app dir, then inside, look for providers dir and enter the file in the provider dir to make some changes
+
+you will see a method named boot 
+
+    public function boot(): void
+    {
+        Gate::define('visitAdminPages', function($user){
+            if ( $user->isAdmin === 1) {
+                # code...
+                return true;
+            }
+            return '<h2>Only for admins</h2>'
+            
+        });
+    }
+Now how do we make sure only the admin (robb stark) can access the route and no one else can
+
+lets use the controller way, after we use the route way
+
+so go to the web.php and say: 
+
+Route::get('/admin-only', function(){
+    if (Gate::allows('visitAdminPages')) {
+        # code...
+        return '<h2>Only admins can view this</h2>';
+    }
+    return  '<h2>Your not an admin</h2>';
+});
+
+now lets use a middleware within our route to achieve the same thing
+
+Route::get('/admin-only', function(){
+    return '<h2>Only Admins Can view This</h2>';
+})->middleware('can:visitAdminPages');
 
 
+--> Next we want mo move on with the change avatar feature where user can upload a different avatar of their choice
+
+lets add a change -avatar btn in the user profile page
+
+in the profile-posts blade file
+under the first form element, we check if the authenticated username == username
+
+          @if (auth()->user()->name == $name)
+              <a href="/manage-avatar" class="btn btn-secondary btn-sm">Manage Avatar</a>
+          @endif
+<!-- we set up a route for the manage-avatar link -->
+Route::get('/manage-avatar', [UserController::class, "showAvatarForm"]);
+
+create an avatar-form.blade.php file and in the file write
+
+@include('header')
+
+<div class="container container--narrow py-md-5">
+    <h2 class="text-center mb-3">Upload New Avatar</h2>
+    <form action="/manage-avatar" method="POST" enctype="multipart/form-data">
+    <!-- wen dealing with file, you need to add enctype -->
+        @csrf
+        <div class="mb-3">
+            <input type="file" name="avatar" required>
+            @error('avatar')
+                <p class="alert small alert-danger shadow-sm">{{$message}}</p>
+            @enderror
+        </div>
+        <button class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+@include('footer')
+
+Route::post('/manage-avatar', [UserController::class, "storeAvatar"]);
+<!-- we set up a post request for this file upload this time -->
+
+
+go to the user controller and create the method
+
+in the method, we wanna actually store the user's avatar
+
+    public function storeAvatar(Request $request){
+        // in the avatar-form, remember in the input field, we added a name 'avatar'
+        // so we will use that 
+        $request->file('avatar')->store('user_avatars', 'public'); //the store() signifies where the img will be stored locally
+        //check the storage dir -> app dir -> public dir -> you'd see user_avatars dir
+
+        // but that's local, if we want to store the avatars where it will be available persistently,
+        // there's a public dir in the laravel project, 
+
+        so if we want to save our avatars in the public dir, not in the storage dir, 
+        we first need to run the commannd `php artisan storage:link`
+
+        what does this command do? Remember we created a local dir store('user_avatars', public);
+        this creates a dir user_avatars in the storage -> app -> public/ dir
+        so in the public dir, we see a dir called user_avatars
+    
+        `php artisan storage:link` running this command links up what's in that storage/app/public/user_avatars dir -> to the base public dir that's in the laravel project
+
+        sounds confusing , i know
+
+        the command links the public dir command in the storage /app / public dir
+
+
+
+        return '<h1>Uploaded!</h1>';
+    }
+
+
+in laravel,if we upload an image more than 2mb, we get an error, so lets fix that
+actually, this has nothing to do with laravel, but with php we need to configure stuff to allow more than 2mb file uploads
+
+so go to the php folder in your C drive , then look for php.ini and configure it
+
+in the php ini file, look for: upload_max_filesize, and change it from 2M to 8M
+
+save it, then restart your laravel server
+
+
+-----------------------------
+File Re-sizing on the server side
+
+when we upload a file to our server, we just don't want to store a 5mb file, we should be able to compress this file before we actually store it on our server
+------------------------------
 
 
 

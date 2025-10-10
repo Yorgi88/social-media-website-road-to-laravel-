@@ -13,6 +13,9 @@ Route::get('/post', [ExampleController::class, "post"]);
 Route::post('/register', [UserController::class, "register"])->middleware('guest');
 Route::post('/login', [UserController::class, "login"])->middleware('guest');
 Route::post('/logout', [UserController::class, "logout"])->middleware('auth');
+Route::get('/manage-avatar', [UserController::class, "showAvatarForm"]);
+Route::post('/manage-avatar', [UserController::class, "storeAvatar"]);
+
 //you can only log out if you are already an authenticated user that's logged in
 
 Route::get('/create-post', [PostController::class, "showCreatePost"])->middleware('mustBeloggedIn');
