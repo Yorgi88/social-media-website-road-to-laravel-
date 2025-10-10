@@ -8,12 +8,20 @@ use App\Http\Controllers\PostController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/home', [UserController::class, "showCorrectHomepage"]);
+Route::get('/home', [UserController::class, "showCorrectHomepage"])->name('login');
 Route::get('/post', [ExampleController::class, "post"]);
-Route::post('/register', [UserController::class, "register"]);
-Route::post('/login', [UserController::class, "login"]);
-Route::post('/logout', [UserController::class, "logout"]);
+Route::post('/register', [UserController::class, "register"])->middleware('guest');
+Route::post('/login', [UserController::class, "login"])->middleware('guest');
+Route::post('/logout', [UserController::class, "logout"])->middleware('auth');
+//you can only log out if you are already an authenticated user that's logged in
 
-Route::get('/create-post', [PostController::class, "showCreatePost"]);
-Route::post('/create-post', [PostController::class, "storeNewPost"]);
+Route::get('/create-post', [PostController::class, "showCreatePost"])->middleware('mustBeloggedIn');
+Route::post('/create-post', [PostController::class, "storeNewPost"])->middleware('auth');
 Route::get('/post/{post}', [PostController::class, "getUserPost"]);
+
+Route::get('/profile/{user:name}', [UserController::class, "userProfile"]);
+
+Route::delete('/post/{post}', [PostController::class, "deletePost"])->middleware('can:delete,post');
+
+Route::get('/post/{post}/edit', [PostController::class, "viewEditForm"])->middleware('can:update,post');
+Route::put('/post/{post}', [PostController::class, "saveEdit"])->middleware('can:update,post');

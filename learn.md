@@ -628,6 +628,333 @@ so go to the PostController, in the method: storeNewPost
 return redirect("/post/{$newPost->id}")->with('success', 'post created successfully');
 
 
+Next is msrkdown format for the body of the post
+
+Think of markdown as text edit -> If we are able to implement this feature, we will be able to bold, italicize, adle to add paragraph and so on, in our body
+
+so to start, go to the post controller file and add some code in the getUserPost method
+
+ $post = ['body'] = Str::markdown($post->body);, //so when we enclose a text in double astrisk, we tell the markdown to bold our text for us and so on
+
+ so go to the single-post blade template file and change the {{}} dynamic post body to ->
+
+ <p>{!! $post->body !!}</p>
+
+
+ Next, we want to only allow logged in users to view the create post page, also if a user clicks on the create post btn, we should check if the user to authenticated or not, if not, we probably redirect the user to the register field page and also Protect the Routes created, so even if a user copies an authenticated route link, if the user is not authd, the page won't display still.
+
+ Before we do that, lets find out what a MiddleWare is -> 
+
+ A middleware is like a bridge in between applications or systems that facilitates communication
+ for example if a guest user is passing a bridge for only authd users the bridge won't allow the guest user to pass -> have that analogy
+
+So go to the web.php file in the PostController route, the one with -> 
+
+'showCreatePost'
+
+add the middleware to it
+
+Route::get('/create-post', [PostController::class, "showCreatePost"])->middleware('auth');
+
+then name the /home route as 'login', -> see the web.php file
+
+ we can create our own custom MiddleWare with the command `php artisan make:middleware <middleware name>`
+
+ so in the middleware file that we created, we can customize
+
+ <?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class MustBeLoggedIn
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+       if (auth()->check()) {
+        # code...
+         return $next($request);
+       }
+       return redirect('/home')->with('failure', 'you must be logged in');
+    }
+}
+
+
+-> next go to the bootstrap dir, in the app.php file 
+add this in the middleware section
+
+        $middleware->alias([
+            'mustBeloggedIn' => \App\Http\Middleware\MustBeLoggedIn::class
+        ]);
+
+now we use the name mustBeloggedIn to access out ==r middleware
+
+so to test, go to the web.php, in the showCreatePost route change the middleware from ->middleware('auth) to middleware('mustBeloggedIn)
+
+we see it works
+
+------------
+Next is the user profile page, we can click on the user icon and we can see all the blog post the user has created so far, lets implement the feature
+
+So lets start creating the routes for it, in the web.php -> go there and create the route
+Route::get('/profile/{user:name}', [UserController::class, "userProfile"]);
+/profile/bob/<userid>
+
+next create the method in the UserController::userProfile
+
+next we need the view template, so create the blade file profile-posts.blade.php
+
+next we get the template for the user profile page, so go to the Downloads folder on your pc and locate the html templates ->prodile-posts.html
+
+
+next, go to the header.blade file -> and change the anchor tag around the profile icon
+
+          <a href="/profile/{{auth()->user()->name}}" class="mr-2"><img title="My Profile" data-toggle="tooltip" data-placement="bottom" style="width: 32px; height: 32px; border-radius: 16px" src="https://gravatar.com/avatar/f64fc44c03a8a7eb1d52502950879659?s=128" /></a>
+
+in the profile-posts blade file, we want to change somethings and make them dynamic -> see the file
+
+
+
+we need to access the user in the database and the user's blogpost in the db
+
+so in the user controller file we use type hinting in the userProfile method
+
+    public function userProfile(User $user){
+        return view('profile-posts', ['name' => $user->name]);
+    }
+
+so, now lets fetch all the posts dynamic for the specific user
+
+next we go to the User.php file in the Models dir and add a method
+
+    public function posts(){
+        return $this->hasMany(Post::class, 'user_id');
+        -> signifies that a user can have many posts, and the user_id is the lookup or the unique identifier
+
+        the user_id is gotten from the Post class, see ->Post.php
+
+    }
+
+Now go back to the user controller file and update the user controller method
+
+    public function userProfile(User $user){
+        $getUserPost = $user->posts()->latest()->get();
+        return view('profile-posts', ['name' => $user->name, 'posts' => $getUserPost]);
+    }
+
+next we move on to the profile-posts blade template file and updatee the html
+
+-> see profile-posts.blade.php
+
+so lets create the post count, the number of posts created is displayed in the ui, so lets also make that dynamic
+
+so, in our user controller we say -> see the userProfile method
+
+
+
+---------------
+
+Next we want to allow the users who created the posts to be able to update or delete the posts
+but they can't get permission to do so for another user except themselves
+
+we'll use something called a POLICY in laravel
+
+think of a policy in terms of memoization, it a write once, use anywhere else in the application kind of thing
+
+lets setup a policy to allow a user to be able to edit and delete his own post only
+
+no other user except the user can do that
+
+so go to the terminal create a policy with a command -> 
+`php artisan make:policy PostPolicy --model=Post` -> be mindful of naming conventions in laravel
+this command is tied to the Post model
+
+so in this file, we will be able to code the policy, eg only the very user can edit or delete his own post
+
+You can check your policy in the Routes method, or in the controller method, or from the blade template angle
+
+so in the post policy file
+
+add this to the update method and delete method for now -> return $user->id === $post->user_id;
+
+now how do we actually leverage the post policy
+
+now go to single-post blade template 
+
+wrap the span element in the can, endcan check
+
+so what happens, remember we are logged in in chrome browser, so we can edit and delete, 
+now paste the link in the chrome browser and go to firefox browser and paste the link
+
+we don't see the edit and delete feature since we are unauthorized user using another browser
+
+that's the power of policy in laravel
+
+now lets try to delete functionality from our PostController 
+
+so create a method called deletePost and then write the logic, when donec, go to web.php to create the route
+
+    public function deletePost(Post $post){
+        if (auth()->user()->cannot('delete', $post)) {
+            # code...
+            return 'You cannot delete it';
+        }
+        $post->delete();
+        return redirect('/profile/' . auth()->user()->name)->with('success', 'post deleted');
+        -> this checks if the user is authd, therefore the post can be deleted by the user
+    }
+
+so next go to the single-post blade file and make changes to the delete icon btn -> see the file
+
+        @can('update', $post)
+        <span class="pt-2">
+          <a href="#" class="text-primary mr-2" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit"></i></a>
+          <form class="delete-post-form d-inline" action="/post/{{$post->id}}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button class="delete-post-button text-danger" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash"></i></button>
+          </form>
+        </span>
+        @endcan
+
+
+next, how we can use policy from routes file with middleware instead
+
+-> policy middleware
+
+How to implement? so back to your post controller file
+
+    public function deletePost(Post $post){
+        if (auth()->user()->cannot('delete', $post)) {
+            # code...
+            return 'You cannot delete it';
+        } 
+        $post->delete();
+        return redirect('/profile/' . auth()->user()->name)->with('success', 'post deleted');
+        -> this checks if the user is authd, therefore the post can be deleted by the user
+    }
+
+-> delete the if block only, then go to the web.php and say 
+
+Route::delete('/post/{post}', [PostController::class, "deletePost"])->middleware('can:delete,post');
+
+-> means an unauthorized user cannot delete the post except the authorized user
+
+slick!
+
+Now to the edit text feature
+
+How it should work, when a user clicks on the edit button, the user will be taken to the title and body page where the user will be able to edit both
+
+so set up a blade template for this -> lets call it edit-post.blade.php
+# copy the content in the create-post template
+
+now in the edit-post file, we need to make a few changes -> 
+
+we'll need to fetch the title and body from the database into the edit-post file
+
+      <form action="/post/{{$post->id}}" method="POST">
+        @method('PUT')
+         @csrf
+<input value="{{old('title', $post->tittle)}}"
+the same for the textarea element 
+
+next we go into our routes file and add this ->
+
+Route::get('/post/{post}/edit', [PostController::class, "viewEditForm"])->middleware('can:update,post');
+Route::put('/post/{post}', [PostController::class, "saveEdit"])->middleware('can:update,post');
+
+the first route is for viewing the post to be changed, the second route is for actually saving the changes
+
+next create the methods for each route in the post controller so go do that ->
+
+    public function viewEditForm(Post $post){
+        return view('edit-post', ['post' => $post]);
+    }
+
+
+    public function saveEdit(Post $post, Request $request){
+        // we need to things, the $post value arg and the incoming request
+        $incomingFields = $request->validate([
+            'title' => 'required',
+            'body' => 'required'
+        ]);
+        $incomingFields['title'] = strip_tags($incomingFields['title']);
+        $incomingFields['body'] = strip_tags($incomingFields['body']);
+        $post->update($incomingFields);
+
+        return back()->with('success', 'saved changes');
+        // the back just means return the user to the previous route the user was before, 
+        // the user was taken to this route
+    }
+next go to the single-post template file and add the route in the form elem
+
+in the edit-post blade file, we want to add a new btn that says, 'Go back'
+so when the btn is clicked, we return the user to the previous route
+
+
+----------------
+ADMIN
+----------------
+
+--> Next let move on to creating an admin that governs the whole user post, think of this as superuser in django, the admin will have all sorts of privileges -> A Moderator
+
+they will have permission to delete or update anyone's posts
+
+the trick is to find a user and make that user an admin lets say the mod is Robb Stark
+
+SO IN OUR terminal, run the command `php artisan make:migration add_is_admin_to_users_table --table=users`
+
+Twill create a file so goto the database->migrations dir and look for it
+
+in the up method -> add the code: return $table->boolean('isAdmin')->default(0);
+and in the down method add ->  return $table->dropColumn('isAdmin');
+
+then in the command, run `php artisan migrate` to make changes
+
+Now lets set Robb Stark to be an admin
+
+-> go into your PostPolicy file and make that change
+
+in the update method, write the code logic there
+
+        if ($user->isAdmin === 1) {
+            # code...
+            return true;
+        }
+-> paste it in the delete method too
+
+go to the DB browser for SQLite application, install it if you haven't and 
+in the isAdmin column for ronn stark, change the isAdmin from 0 -> 1
+
+save it and test the app in laravel
+
+so yh as an admin Robb Stark can update and delete Bob posts, try it out in firefox
+
+copy the Bob user posts url in the firefox browser where robb stark is logged in , you will see you can edit or delete Bob posts
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
 
 
 

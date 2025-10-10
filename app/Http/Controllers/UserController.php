@@ -25,7 +25,7 @@ class UserController extends Controller
             'login_name' => 'required',
             'login_password' => 'required'
         ]);
-
+        // note that the login_name, is from the input field in the header.blade file
         if (auth()->attempt(['name' => $incomingFields['login_name'], 'password' => $incomingFields['login_password']])) {
             # code...
             $request->session()->regenerate();
@@ -52,5 +52,11 @@ class UserController extends Controller
         auth()->logout();
         return redirect('/home')->with('success', 'You are logged out');
     }
+
+    public function userProfile(User $user){
+        $getUserPost = $user->posts()->latest()->get();
+        $postCount = $user->posts()->count();
+        return view('profile-posts', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount]);
+    }
 }
-// note that the login_name, is from the input field in the header.blade file
+
