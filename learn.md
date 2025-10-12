@@ -1073,10 +1073,106 @@ File Re-sizing on the server side
 when we upload a file to our server, we just don't want to store a 5mb file, we should be able to compress this file before we actually store it on our server
 ------------------------------
 
+but first, protect the route for the avatar routes using middleware
+
+next we want to validate the file that the user needs to upload to change avatar
+it-> must be an image
+
+so in the UserController, in the storeAvatar method change ->
+
+        $request->validate([
+            'avatar' => 'required|image|max:3000'
+        ]);
+        $request->file('avatar')->store('user_avatars', 'public'); 
+        return '<h1>Uploaded!</h1>';
+
+this code means we are more selective now, the img field is required and the img mustn't exceed 3 mb
+
+Now lets learn how to resize the img
+
+we will need to install a package from composer
+
+`composer require intervention/image`
+
+now lets refactor the code in our storeAvatar method in the user controller, AGAIN!
+
+     $request->validate([
+            'avatar' => 'required|image|max:3000'
+        ]);
+        // $request->file('avatar')->store('user_avatars', 'public'); 
+        $user = auth()->user();
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($request->file('avatar'));
+        // we simply want to read the incoming image from the request
+        $imageData = $image->cover(120, 120)->toJpeg();
+        // now to actually resize the img
+
+        Storage::disk('public')->put('user_avatars/');
+        // we gonna call the storage class and put in the img file, the put
+        // will take two args, folder path and file name
+        return '<h1>Uploaded!</h1>';
+    }
 
 
+go through the code carefully and try to understand, for we are not done
 
- 
+--> lets try to save it to our database
+we need to create a table 'avatar' in our database first, so rin the command:
+
+`php artisan make:migration add_avatar_to_users_table --table=users`
+
+this creates a column called avatar, where we can store the user avatar
+go to the said file: add_avatar_to_users_table
+
+and write some code
+
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('avatar')->nullable()->after('password');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('avatar');
+        });
+    }
+
+go to the user.php in the models dir and add 'avatar' to the fillable
+
+also, we want to make sure when the user chnages their avatar, it actually changes in the ui
+
+so go to header.blade.php file
+
+          <a href="/profile/{{auth()->user()->name}}" class="mr-2"><img title="My Profile" data-toggle="tooltip" data-placement="bottom" style="width: 32px; height: 32px; border-radius: 16px" src="/storage/user_avatars/{{auth()->user()->avatar}}" /></a>
+we changed the src part
+
+Now we want to make the user avatar, appear in all areas of the user's app, we also want a default avatar in place if the user hasn't uploaded any avatar yet
+
+we want to make this avatar change persistent
+
+so go the User.php file, we are gonna use an accessor
+
+    protected function avatar(): Attribute {
+        return Attribute::make(get: function($value){
+            // lets filter what the incoming value of avatar is to be
+            // so we say if the user's avatar field is null, use a default image
+            return $value ? '/storage/user_avatars/' . $value : 'fallback-avatar.jpg';
+        });
+    }
+so if the user has not avatar uploaded, we use the fallback-avatar image instead
+
+so we put our fallback-avatar.jpg in the public dir in the laravel project
+
+so go to header.blade file and say
+
+          <a href="/profile/{{auth()->user()->name}}" class="mr-2"><img title="My Profile" data-toggle="tooltip" data-placement="bottom" style="width: 32px; height: 32px; border-radius: 16px" src="{{auth()->user()->avatar}}" /></a>
+
+
+go to the profile-posts.blade file and adjust accordingly as well
+
 
 
 
