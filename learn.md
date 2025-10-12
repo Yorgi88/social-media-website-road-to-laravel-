@@ -1236,6 +1236,65 @@ next go to the Follow Controller file and start coding up the logic
 
 
 
+-> next we want an unfollow feature, if the user is already following another user, then there's no need for the follow btn to show, only the unfollow btn should show
+
+-> go to the user controller -> in the userProfile method, pass something to the frontend
+
+    public function userProfile(User $user){
+        $isFollow = 0;
+        if (auth()->check()) {
+            # code...
+            $isFollow = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
+        };
+       
+        $getUserPost = $user->posts()->latest()->get();
+        $postCount = $user->posts()->count();
+        return view('profile-posts', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
+    }
+
+so, go to the profile-post blade template and make the change
+
+      <h2>
+        <img class="avatar-small" src="{{$avatar}}" /> {{$name}}
+        @auth
+          @if (!$isFollow AND auth()->user()->name != $name)
+            <form class="ml-2 d-inline" action="/create-follow/{{$name}}" method="POST">
+              @csrf
+              <button class="btn btn-primary btn-sm">Follow <i class="fas fa-user-plus"></i></button>
+          <!-- <button class="btn btn-danger btn-sm">Stop Following <i class="fas fa-user-times"></i></button> -->
+ 
+            </form>
+          @endif
+
+          @if ($isFollow)
+            <form class="ml-2 d-inline" action="/remove-follow/{{$name}}" method="POST">
+              @csrf
+              <<button class="btn btn-danger btn-sm">Unfollow<i class="fas fa-user-times"></i></button>
+
+          </form>
+        @endif
+   -        @if (auth()->user()->name == $name)
+              <a href="/manage-avatar" class="btn btn-secondary btn-sm">Manage Avatar</a>
+            @endif
+        @endauth
+
+      </h2
+
+we have tow outer if blocks-> we check if the user is not being followed, then lets the follow button appear
+
+if the user is being followed(if($isFollow)), let the unfollow btn to appear
+
+
+-> so next lets actually implement the unfollow feature, go to the FollowController
+
+next - we want to make an easy fix, the follow btn should not appear on our own account or the unfollow
+
+for example, if you're bob, then in your profile you should not see those btns
+
+go to profile-posts blade file and change: @if (!$isFollow AND auth()->user()->name != $name)
+
+
+
 
 
 

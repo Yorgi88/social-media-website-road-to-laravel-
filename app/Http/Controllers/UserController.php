@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Follow;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
@@ -60,9 +61,15 @@ class UserController extends Controller
     }
 
     public function userProfile(User $user){
+        $isFollow = 0;
+        if (auth()->check()) {
+            # code...
+            $isFollow = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
+        };
+       
         $getUserPost = $user->posts()->latest()->get();
         $postCount = $user->posts()->count();
-        return view('profile-posts', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar]);
+        return view('profile-posts', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
     }
 
     public function showAvatarForm(){
