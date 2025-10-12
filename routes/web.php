@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\FollowController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -15,8 +16,11 @@ Route::post('/login', [UserController::class, "login"])->middleware('guest');
 Route::post('/logout', [UserController::class, "logout"])->middleware('auth');
 Route::get('/manage-avatar', [UserController::class, "showAvatarForm"])->middleware('mustBeloggedIn');
 Route::post('/manage-avatar', [UserController::class, "storeAvatar"])->middleware('mustBeloggedIn');
-
 //you can only log out if you are already an authenticated user that's logged in
+
+Route::post('/create-follow/{user:name}', [FollowController::class, "followUser"])->middleware('mustBeloggedIn');
+Route::post('/remove-follow/{user:name}', [FollowController::class, "unFollowUser"])->middleware('mustBeloggedIn');
+
 
 Route::get('/create-post', [PostController::class, "showCreatePost"])->middleware('mustBeloggedIn');
 Route::post('/create-post', [PostController::class, "storeNewPost"])->middleware('auth');

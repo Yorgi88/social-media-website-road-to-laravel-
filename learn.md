@@ -1173,7 +1173,66 @@ so go to header.blade file and say
 
 go to the profile-posts.blade file and adjust accordingly as well
 
+---------------------------------
 
+USER FOLLOW ANOTHER USER FEATURE
+
+------------------------------------
+
+--> How do we store that relationship
+we create a follows table -> one column signifies the user doing the following - another column signifies the user_id of the user being followed
+
+
+->> lets create more users, Kyle and Vera and Sean first
+
+So run the command `php artisan make:migration create_follows_table`
+
+go and find the file in the migrations dir and add some code
+
+    public function up(): void
+    {
+        Schema::create('follows', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained();  //the user doing the following
+
+            $table->unsignedBigInteger('followeduser'); //repr the user being followed
+            $table->foreign('followeduser')->references('id')->on('users'); //repr the user being followed
+            $table->timestamps();
+        });
+    }
+
+now save changes running the `php artisan migrate`
+
+now lets create the route and the method for this feature
+
+go to the web.php and make the route
+Route::post('/create-follow/{user:name}', [FollowController::class, "followUser"])->middleware('auth');
+
+duplicate the route for unfollowing user
+Route::post('/remove-follow/{user:name}', [FollowController::class, "unFollowUser"]);
+
+
+
+-> lets create a FollowController use the command 
+`php artisan make:controller FollowController`
+
+import it in the web.php
+
+next go to the Follow Controller file and start coding up the logic
+    public function followUser(User $user){
+        //u cannot follow yourself, 
+        //u cannot follow someone you're already following
+        $newFollow = new Follow();
+        $newFollow->user_id = auth()->user()->id;
+        $newFollow->followedid = $user->id;
+        $newFollow->save();
+    }
+
+--> go to the profile-post blade template and make some changes in the form elements
+
+-> we need a Follow Model so go create one
+
+`php artisan make:model Follow`
 
 
 
