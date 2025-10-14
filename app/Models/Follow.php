@@ -6,5 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Follow extends Model
 {
-    //
+    public function userDoingTheFollowing(){
+        return $this->belongsTo(User::class, 'user_id');
+        //the user doing the following
+    }
+
+    public function userBeingFollowed(){
+        return $this->belongsTo(User::class, 'followeduser');
+        // the user being followed
+    }
 }

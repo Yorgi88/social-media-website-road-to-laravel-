@@ -56,6 +56,17 @@ class User extends Authenticatable
         ];
     }
 
+    public function followers(){
+        return $this->hasMany(Follow::class, 'followeduser');
+        //a can user can have many followers
+    }
+
+    public function followingTheseUsers(){
+        return $this->hasMany(Follow::class, 'user_id');
+        //returns whoever the user is following
+        //see the learn.md file for more explanation
+    }
+
     public function posts(){
         return $this->hasMany(Post::class, 'user_id');
     }

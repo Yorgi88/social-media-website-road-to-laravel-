@@ -1,5 +1,4 @@
-@include('header')
-
+<x-layout>
     <div class="container py-md-5 container--narrow">
        
       <form action="/create-post" method="POST">
@@ -27,5 +26,4 @@
         <button class="btn btn-primary">Save New Post</button>
       </form>
     </div>
-
-@include('footer')
+</x-layout>

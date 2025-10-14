@@ -1294,8 +1294,164 @@ for example, if you're bob, then in your profile you should not see those btns
 go to profile-posts blade file and change: @if (!$isFollow AND auth()->user()->name != $name)
 
 
+-> Next we want the follow count to show
+for example is bob is following 2 people under the following tab, we should see 2
+
+and if bob has 3 followers, we should see 3 under the followers tab
+
+we wanto be be able to view the followers as well , so lets do that
+
+-> Go to the profile-posts blade file and copy its content
+
+paste it in a new file called profile.blade.php
+
+next we created a layouts dir and innit, a app.blade template dir,-> look at it, its self-explanatory
+
+--> now back to the feature we want to implement
+
+create a route in the web.php file
+
+Route::get('/profile/{user:name}/followers', [UserController::class, "userFollwers"]);
+Route::get('/profile/{user:name}/following', [UserController::class, "userFollowing"]);
+
+next, we set up the methods for each in the user controller file
 
 
+   public function userFollowers(User $user){
+        $isFollow = 0;
+        if (auth()->check()) {
+            # code...
+            $isFollow = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
+        };
+       
+        $getUserPost = $user->posts()->latest()->get();
+        $postCount = $user->posts()->count();
+        return view('profile-followers', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
+    }
+
+    public function userFollowing(User $user){
+        $isFollow = 0;
+        if (auth()->check()) {
+            # code...
+            $isFollow = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
+        };
+       
+        $getUserPost = $user->posts()->latest()->get();
+        $postCount = $user->posts()->count();
+        return view('profile-following', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
+    }
+
+    --> so create the view, profile-followers and profile-following
+
+next go to the profile-blade file and make some changes
+
+--> i went to the userController and made some changes, in the userProfile method, i changed the view from profile-posts to profile.blade.php, the mistake i made from the very beginning was that i should have used components based styling and structuring using <x-layouts>
+
+and i don't want to refactor, maybe in the future --> `actually we did refactor the codes in the templates, using the <x-> component, take a look at it`
+
+now lets go to the profile balde file
+
+where you have a anchor tags , that point to the Posts, Following, Follwers
+
+      <div class="profile-nav nav nav-tabs pt-2 mb-4">
+        <a href="/view-post/{{$name}}" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "" ? "active" : ""}}">Posts: {{$postCount}}</a>
+        <a href="/profile/{{$name}}/followers" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "followers" ? "active" : ""}}">Followers: 3</a>
+        <a href="/profile/{{$name}}/following" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "following" ? "active" : ""}}">Following: 2</a>
+      </div>
+The request segment signifies the routes, eg profile/Bob/followers, that's 3 segments
+so if the third segment = followers, it should route to the followers tab, if its following, it should take us to the following tabe, else, we are still in the user posts tab
+
+
+
+next in the UserController, we want to refactor some code
+--> look at it the file
+we created a private function getSharedData, 
+this data houses all our templates will need
+this function affects the userProfile method, userFollowers and userFollowing metthod
+
+
+
+`something happened while we were building, i kept getting the undefined variable name called avatar --error, so i tried to fix it, in the private method called getSharedData in the UserController, we removed the avatar data from it and made it standalone, so we passed in the avatar data in the userProfile, userFollowing and userFollowers method , in the view templates, we passed in the avatar data in the profile-posts, profile-following and profile-followers views `
+
+-------------------
+-> lets create a relationship between a a user and Follow, previouly we created a relationship beetween user and posts in the User.php file
+
+    public function followers(){
+        return $this->hasMany(Follow::class, 'followeduser');
+        //a user can have many followers
+    }
+
+    public function followingTheseUsers(){
+        return $this->hasMany(Follow::class, 'user_id');
+        //returns whoever the user is following, can be many too
+    }
+
+-> also lets quickly look at the Follow.php model we created
+
+-> take a look at the code there, here it is below
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Follow extends Model
+{
+    public function userDoingTheFollowing(){
+        return $this->belongsTo(User::class, 'user_id');
+        //the user doing the following
+    }
+
+    public function userBeingFollowed(){
+        return $this->belongsTo(User::class, 'followeduser');
+        // the user being followed
+    }
+}
+-------------------
+
+Follow::create([
+    'user_id' => 5,          // John
+    'followeduser' => 2,     // Sarah
+]);
+ from tis analogy, John is following Sarah, the user doing the following
+
+ Sarah is the user being followed
+
+ -> in the User.php we connect to the Follow model
+
+
+-- in the User.php lets explain the method called followers
+
+🔍 What this means:
+
+Each user can have many Follow records where that user is the one being followed.
+
+In the follows table, those records have the followeduser column equal to the user’s id.
+
+Example:
+
+If $user->id = 8,
+Laravel will fetch all rows where followeduser = 8.
+
+
+Next in the followingTheseUsers method
+--------
+
+What this means:
+
+Each user can have many Follow records where that user is the one doing the following.
+
+In the follows table, those records have the user_id column equal to the user’s id.
+
+
+in other words let me explain in SIMPLE TERMS
+
+A USER CAN HAVE MANY FOLLOWERS AND THAT VERY USER CAN PERFORM FOLLOWING TO OTHER USERS AS MANY AS THE USER WANTS
+
+
+Now back to our UserController, 
+
+in the userFollowers method-> 
 
 
 

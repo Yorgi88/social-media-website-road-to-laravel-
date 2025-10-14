@@ -1,6 +1,4 @@
-@include('header')
-
-
+<x-layout>
     <div class="container py-md-5 container--narrow">
       <div class="text-center">
         <h2>Hello <strong>{{auth()->user()->name}}</strong>, your feed is empty.</h2>
@@ -8,6 +6,4 @@
       </div>
     </div>
 
-
-
-    @include('footer')
+</x-layout>

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Follow;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Cache;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -60,17 +61,30 @@ class UserController extends Controller
         return redirect('/home')->with('success', 'You are logged out');
     }
 
-    public function userProfile(User $user){
+    private function getSharedData($user){
         $isFollow = 0;
         if (auth()->check()) {
             # code...
             $isFollow = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
-        };
-       
-        $getUserPost = $user->posts()->latest()->get();
-        $postCount = $user->posts()->count();
-        return view('profile-posts', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
+        }
+        //  $getUserPost = $user->posts()->latest()->get();
+        // $postCount = $user->posts()->count();
+        View::share('sharedData', ['name' => $user->name, 'postCount'=> $user->posts()->count(), 'isFollow' => $isFollow]); //we can share a variable and it will be available in our blade template
     }
+
+
+    public function userProfile(User $user){
+        // $postCount = $user->posts()->count();
+        $this->getSharedData($user);
+        return view('profile-posts', ['posts' => $user->posts()->latest()->get(), 'avatar'=>$user->avatar]);
+    }
+
+    //VIEW USER POSTS
+    // public function viewUserPost(User $user){
+    //     $getUserPost = $user->posts()->latest()->get();
+    //     return view('profile-posts', ['posts' => $getUserPost, 'avatar' => $user->avatar, 'name' => $user->name]);
+    // }
+    //-------------------------------
 
     public function showAvatarForm(){
         return view('avatar-form');
@@ -112,6 +126,23 @@ class UserController extends Controller
             Storage::disk('public')->delete(str_replace('/storage/', '', $oldAvatar));
         }
         return '<h1>Uploaded!</h1>';
+    }
+
+    public function userFollowers(User $user){
+       
+        // $getUserPost = $user->posts()->latest()->get();
+        // // return view('profile-followers', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
+        // $getUserPost = $user->posts()->latest()->get();
+        $this->getSharedData($user);
+        return view('profile-followers', ['followers' => $user->followers()->latest()->get(), 'avatar'=> $user->avatar]);
+    }
+
+    public function userFollowing(User $user){
+
+        
+        // $getUserPost = $user->posts()->latest()->get();
+        $this->getSharedData($user);
+        return view('profile-following', ['posts' => $user->posts()->latest()->get(), 'avatar'=> $user->avatar]);
     }
 }
 

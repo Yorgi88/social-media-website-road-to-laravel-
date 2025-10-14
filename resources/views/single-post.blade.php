@@ -1,4 +1,4 @@
-@include('header')
+<x-layout>
 
     <div class="container py-md-5 container--narrow">
       <div class="d-flex justify-content-between">
@@ -25,4 +25,4 @@
       </div>
     </div>
 
-@include('footer')
+</x-layout>

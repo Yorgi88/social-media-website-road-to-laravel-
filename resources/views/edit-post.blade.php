@@ -1,4 +1,4 @@
-@include('header')
+<x-layout>
 
     <div class="container py-md-5 container--narrow">
        
@@ -30,4 +30,4 @@
       </form>
     </div>
 
-@include('footer')
+</x-layout>
