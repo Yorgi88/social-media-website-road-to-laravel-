@@ -10,7 +10,8 @@
               </a>
             @endforeach
         </div>
-
+          {{-- pagination --}}
+          {{$posts->links()}}
       @else
       <div class="text-center">
         <h2>Hello <strong>{{auth()->user()->name}}</strong>, your feed is empty.</h2>

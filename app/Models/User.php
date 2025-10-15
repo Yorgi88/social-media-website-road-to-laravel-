@@ -84,4 +84,7 @@ class User extends Authenticatable
             'followeduser'
         );
     }
+
+
+    
 }

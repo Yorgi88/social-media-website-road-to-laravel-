@@ -1533,6 +1533,28 @@ see the file
 
 
 --> Next we will learn how to add pagination in our homepage feed
+what if a particular user has like 100 posts already, we won't want to show all of them at once
+
+-> go to the user controller, in the showCorrectHomepage method
+
+>feedPosts()->latest()->paginate(4)]);  // we changed the get() to paginate()
+
+we need to add pagination links, so go to the homeage-logged blade file
+
+          {{-- pagination --}}
+          {{$posts->links()}}
+
+you can now see the pagination, but lets style it
+
+go to the app dir in the laravel project innit, you'd see a dir called Providers
+in that dir, you would see a AppService file
+
+in the file look for the boot method and in that method write the code for styling
+
+
+
+
+
 
 
 
