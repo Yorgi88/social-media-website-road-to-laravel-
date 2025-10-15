@@ -1486,6 +1486,55 @@ so go to the profile-blade file
        <a href="/profile/{{$sharedData['name']}}/followers" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "followers" ? "active" : ""}}">Followers: {{$sharedData['followerCount']}}</a>
         <a href="/profile/{{$sharedData['name']}}/following" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "following" ? "active" : ""}}">Following: {{$sharedData['followingCount']}}</a>
 
+#
+Next -> lers build out the homepage feed, in the homepage you should see the posts of the users you follow
+
+laravel can just give us the exact stuff we need to implement this feature
+
+we begin by the frame of reference "the user" or at least the user model
+
+go to the user.php model file
+
+    public function feedPosts(){
+        return $this->hasManyThrough(
+            
+        );
+        # we will give it 6 argumants
+        first -> is the model we want to end up with, in this blog posts
+        ssecond -> is the follow class
+        third is the foreign key -> the user doing the following ('user_id)
+        fourth is the foreign key of the post model (user_id)
+        the fifth is the local User model -> if, the very user id,
+        sixth-> local key on the intermediate table -> the user being followed
+
+    }
+
+next we go to the user controller in the showCorrectHomePage method we add:
+
+return view('homepage_logged', ['postFeed' => auth()->user()->feedPosts()->latest()->get()]);
+
+so go to the homepage-logged blade file
+
+we used unless there 
+think of it this way, show the other users posts that the user is following
+unless there is no posts to show
+->  see the file
+
+
+next -> in the homepage feed, we want to show the author, name of the blogposts and so
+
+so in the homepage-logged blade file
+
+next we added a feature in the single post blade file
+
+we added a link up in the anchor tag to direct the user to the profile of the one that has the posts
+
+see the file
+
+
+--> Next we will learn how to add pagination in our homepage feed
+
+
 
 
 

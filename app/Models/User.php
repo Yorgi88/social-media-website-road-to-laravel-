@@ -68,6 +68,20 @@ class User extends Authenticatable
     }
 
     public function posts(){
+        //a user can have many posts
         return $this->hasMany(Post::class, 'user_id');
+    }
+    
+
+    //for the user homepage feed => to get the other users posts in the homepage
+    public function feedPosts(){
+        return $this->hasManyThrough(
+            Post::class,
+            Follow::class,
+            'user_id',
+            'user_id',
+            'id',
+            'followeduser'
+        );
     }
 }
