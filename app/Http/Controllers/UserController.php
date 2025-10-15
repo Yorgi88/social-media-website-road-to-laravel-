@@ -69,7 +69,7 @@ class UserController extends Controller
         }
         //  $getUserPost = $user->posts()->latest()->get();
         // $postCount = $user->posts()->count();
-        View::share('sharedData', ['name' => $user->name, 'postCount'=> $user->posts()->count(), 'isFollow' => $isFollow]); //we can share a variable and it will be available in our blade template
+        View::share('sharedData', ['name' => $user->name, 'postCount'=> $user->posts()->count(), 'isFollow' => $isFollow, 'followerCount' => $user->followers()->count(), 'followingCount' => $user->followingTheseUsers()->count()]); //we can share a variable and it will be available in our blade template
     }
 
 
@@ -142,7 +142,10 @@ class UserController extends Controller
         
         // $getUserPost = $user->posts()->latest()->get();
         $this->getSharedData($user);
-        return view('profile-following', ['posts' => $user->posts()->latest()->get(), 'avatar'=> $user->avatar]);
+        return view('profile-following', ['posts' => $user->posts()->latest()->get(), 'avatar'=> $user->avatar, 'following' => $user->followingTheseUsers()->latest()->get()]);
+
     }
 }
+
+
 

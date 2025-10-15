@@ -1453,6 +1453,38 @@ Now back to our UserController,
 
 in the userFollowers method-> 
 
+    public function userFollowers(User $user){
+       
+        // $getUserPost = $user->posts()->latest()->get();
+        // // return view('profile-followers', ['name' => $user->name, 'posts' => $getUserPost, 'postCount'=> $postCount, 'avatar' => $user->avatar, 'isFollow' => $isFollow]);
+        // $getUserPost = $user->posts()->latest()->get();
+        $this->getSharedData($user);
+        return view('profile-followers', ['followers' => $user->followers()->latest()->get(), 'avatar'=> $user->avatar]);
+    }
+
+--> We are going to code the logic of the user following method, so go to the user controller and do so
+
+    public function userFollowing(User $user){
+
+        
+        // $getUserPost = $user->posts()->latest()->get();
+        $this->getSharedData($user);
+        return view('profile-following', ['posts' => $user->posts()->latest()->get(), 'avatar'=> $user->avatar, 'following' => $user->followingTheseUsers()->latest()->get()]);
+
+    }
+Now go into the profile-following blade file and do the needful
+
+-> see the profile-following blade file
+
+-> next, we want to make the count dynamic, if the user has 4 followers and 2 following, the count should reflect that
+
+-> go to the user controller file and add it in the private getSharedData method
+
+
+so go to the profile-blade file
+
+       <a href="/profile/{{$sharedData['name']}}/followers" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "followers" ? "active" : ""}}">Followers: {{$sharedData['followerCount']}}</a>
+        <a href="/profile/{{$sharedData['name']}}/following" class="profile-nav-link nav-item nav-link {{Request::segment(3) == "following" ? "active" : ""}}">Following: {{$sharedData['followingCount']}}</a>
 
 
 
