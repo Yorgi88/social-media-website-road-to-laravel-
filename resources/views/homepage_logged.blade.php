@@ -4,10 +4,7 @@
       <h2 class="text-center mb-4">Latest Posts from your buddies</h2>
          <div class="list-group">
             @foreach ($posts as $post)
-              <a href="/post/{{$post->id}}" class="list-group-item list-group-item-action">
-              <img class="avatar-tiny" src="{{$post->user->avatar}}" />
-              <strong>{{$post->title}}</strong> <span class="text-muted"> By {{$post->user->name}} on {{$post->created_at->format('n/j/Y')}}</span> 
-              </a>
+              <x-post :post="$post"/>
             @endforeach
         </div>
           {{-- pagination --}}

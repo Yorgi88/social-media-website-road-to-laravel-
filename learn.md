@@ -1552,6 +1552,100 @@ in that dir, you would see a AppService file
 in the file look for the boot method and in that method write the code for styling
 
 
+Next is Attention to detail
+-----------
+
+in the browser, we see ourApp in browser tab button, we want to change that into something else
+
+
+go to the layout.blade.php file
+
+in the <title></title> section around line 7
+
+next go to the single-post blade file and we say: <x-layout :doctitle="$post->title">
+
+next we apply it to when we are viewing someone's profile
+
+so go to profile-posts blade file
+in the file since its using the <x-profile> and not <x-layout> we have to pass in the prop more than once
+
+<x-profile :sharedData="$sharedData" :avatar="$avatar" :doctitle="{{$sharedData['name']}}'s Profile">
+
+feel free to use AI for better explanation
+
+don't wanna spoonfeed ya
+next, go to the profile blade file and update
+
+<x-layout :doctitle="$doctitle">
+
+so you see for example, 'Bob's Profile'
+
+we need to pass it again in the profile-followers and profile-following blade files
+
+so in each of the files we repeat this
+
+<x-profile :sharedData="$sharedData" :avatar="$avatar" :doctitle="{{$sharedData['name']}}'s Profile">  but change the profile to followers
+
+next we go to the create-post blade file and apply it
+
+<x-layout doctitle="Create New Post">
+
+next the edit-post blade file
+
+<x-layout doctitle="Edit Post">
+
+next go to manage avatar section and do the same
+
+-->
+
+next , notice our profile and homepage feed are similar, in fact the only difference is the homepage feed as a "by {{$user->name}}"
+
+example "by Bob" and the data
+
+
+so we want a situation where if we are in the homepage feed, the "by" should appear, else of we are in the user profile feed, the "by" should disappear
+
+therefore, we are makin the component or the files one
+
+
+so go to homepage-logged in file copy this part
+
+              <a href="/post/{{$post->id}}" class="list-group-item list-group-item-action">
+              <img class="avatar-tiny" src="{{$post->user->avatar}}" />
+              <strong>{{$post->title}}</strong> <span class="text-muted"> By {{$post->user->name}} on {{$post->created_at->format('n/j/Y')}}</span> 
+              </a>
+
+and go into the components dir in the views dir and create a new file called
+
+post.blade.php
+
+and paste it there
+
+in the post.blade file
+
+we say         @if (!isset($hideAuthor))
+            By {{$post->user->name}} 
+        @endif
+
+go to the homepage-logged blade file and add the post component there
+
+<x-post :pst="$post"/>  pass the post prop in 
+
+then go to the profile-post blade file and do the same, but this time pass in the hideAuthor too
+
+    @foreach ($posts as $post)
+        <x-post :post="$post" hideAuthor/>
+    @endforeach
+
+
+
+-------------------------------
+
+LIVE SEARCH FEATURE
+
+------------------------------
+
+
 
 
 
