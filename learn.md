@@ -1646,6 +1646,102 @@ LIVE SEARCH FEATURE
 ------------------------------
 
 
+first, lets set up our url domain, so go to the web.php and create
+
+Route::get('/search/{post}', [PostController::class, "search"]);
+
+so we go into the post controller 
+
+we are gonna make use of `laravel scout` for this feature
+
+we need to install it first so in the terminal we say
+
+`composer require laravel/scout`
+
+after, go into the model that you want to be searchable, in our case its Post model
+
+so go there -> always see the exact file, do not depend on what you see here
+
+    public function toSearchableArray(){
+        // the method name has to be exactly this!
+        return ['title' => $this->title, 'body' => $this->body];  //specify the database row that should be searchable
+    }
+
+go to your .env file and add tis SCOUT_DRIVER=database
+
+--> if your app has much traffic, you can use a different search like algolia or melee search
+
+next go into your post controller and say
+
+    public function search($post){
+        $posts = Post::search($post)->get();
+        return $posts;
+    }
+
+we'll need livewire for this search feature, 
+and a bit of js
+
+we installed node js
+
+now we're goin to use laravel asset bundling approach
+
+in our app dir, if you scroll down, you'd see a package.json file
+
+we are gonna install some things
+
+to install the dependencies, just run `npm install `
+
+after locate your resources dir in your laravel app
+
+and you see a js dir
+ open app.js
+
+ go to the css dir -> look for app.css 
+
+ then locate main.css in the public dir, copy its content and paste in app.css
+
+ next we want laravel to get our styling from app.css not main.css anylonger
+
+ so go to layout.blade file template
+
+ comment out the path pointing to the main.css
+
+ add this new path
+
+     @vite(['resources/css/app.css'])
+    @vite(['resources/js/app.js'])
+
+--> next split your terminal
+
+run the npm run dev command in one, and php artisan serve in another
+
+it works
+
+ctrl + c(both) to stop, run npm run build in the npm side of the splitted terminal
+
+--> next lets try to build the search feature
+
+in the HTML templates we got from Brad Schiff's repo, there is a file called live.search.js
+
+copy the contents of the file, in the resources dir -> in the js dir
+create a file called live_search.js
+
+we need to install dompurify package for security , so install it using npm
+
+next we need to import the live_search js file in the app.js file
+
+so we say: 
+
+import Search from './live_search';
+
+if (document.querySelector('.header-search-icon')) {
+    new Search();
+    <!-- this means we are only targetting the search icon and nothing else
+    rememeber for an un-registered user the search icon won't show -->
+}
+
+
+
 
 
 

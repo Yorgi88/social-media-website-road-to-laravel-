@@ -58,4 +58,10 @@ class PostController extends Controller
         // the user was taken to this route
     }
 
+    public function search($post){
+        $posts = Post::search($post)->get();
+        $posts->load('user:id,name,avatar');
+        return $posts;
+    }
+
 }

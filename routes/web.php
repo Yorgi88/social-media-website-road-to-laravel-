@@ -25,6 +25,8 @@ Route::post('/remove-follow/{user:name}', [FollowController::class, "unFollowUse
 Route::get('/create-post', [PostController::class, "showCreatePost"])->middleware('mustBeloggedIn');
 Route::post('/create-post', [PostController::class, "storeNewPost"])->middleware('auth');
 Route::get('/post/{post}', [PostController::class, "getUserPost"]);
+Route::get('/search/{post}', [PostController::class, "search"]);
+
 // Route::get('/view-post/{user:name}', [UserController::class, "viewUserPost"])->middleware('mustBeloggedIn');
 //---------------- 000000=-------0000000---------
 
