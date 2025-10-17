@@ -1740,6 +1740,93 @@ if (document.querySelector('.header-search-icon')) {
     rememeber for an un-registered user the search icon won't show -->
 }
 
+so we test the search feature, and voila, it works
+
+remember, in your post controller, you have to name the method search for it to work
+
+cause we'll send an axios req to it, look at the live_search js code
+
+-> now quickly run npm run build to store the new code changes for the public
+
+
+
+
+-----------------------------
+LIVE CHAT FEATURE
+
+-----------------------------
+
+
+
+we use broadcasting method for this live chat feature
+
+we will make use of event listeners
+
+to create one, type `php artisan make:event <event name>`
+
+now lets create a listener `php artisan make:listener ` ->run the commmand
+
+it will ask you the listener name and the event it should connect to
+in pur case we connect it to OurExampleEvent
+
+next lets actually make use of these
+
+go to the user controller, in the login method, lets create an event for login
+
+event(new OurExampleEvent()); -> see the code in the file
+
+lets add the same code to the logout 
+
+Note that its the job of an event listener to list for events that happen, when it happens perhaps a feature or btn or image will pop up as a response, i am just giving an analogy
+
+so next, we go to the ExampleListener file and write some code
+
+    public function handle(OurExampleEvent $event): void
+    {
+        Log::debug('The event just occurred');
+    }
+
+now when we login and log out, we should see the msg in our logs file
+
+to locate this log file its in the Storage dir -> you'd see the logs dir, you'd see a file called laravel.log,, so in the file, delete everything for a fresh start
+
+so when we log in and log out 
+
+in the laravel logs, you see, 
+[2025-10-17 05:16:45] local.DEBUG: The event just occurred  
+[2025-10-17 05:16:55] local.DEBUG: The event just occurred  
+
+lets learn how to pass data, into  and out of the event
+
+# lets say want a msg, " The user Bob just logged  in"
+so whenever bob logs in we'll know
+
+lets start in our user controller
+
+in the logout method
+
+ event(new OurExampleEvent(['username' => auth()->user()->name, 'action' => 'logout']));
+
+ do the same for login
+
+ now to receive the values in our event -> we go to ExampleEvent file
+
+ in the __contruct method we say
+
+     public function __construct($event)
+    {
+        $this->name = $event['username'];
+        $this->action = $event['action'];
+    }
+
+next we go into the Listener file and say
+
+    public function handle(OurExampleEvent $event): void
+    {
+        Log::debug('The user: {$event->username} just performed an {$event->action}');
+    }
+lets test 
+
 
 
 
