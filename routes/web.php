@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use App\Events\ChatMessage;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
@@ -33,6 +35,24 @@ Route::get('/search/{post}', [PostController::class, "search"]);
 Route::get('/profile/{user:name}', [UserController::class, "userProfile"]);
 Route::get('/profile/{user:name}/followers', [UserController::class, "userFollowers"]);
 Route::get('/profile/{user:name}/following', [UserController::class, "userFollowing"]);
+
+//chat route
+Route::post('/send-chat-message', function(Request $request){
+    $formFields = $request->validate([
+        'textvalue' => 'required'
+    ]);
+
+    //trim white spaces and strip out tags
+    if (!trim(strip_tags($formFields['textvalue']))) {
+        # code...
+        return response()->noContent();
+    }
+
+    //if not, broadcast the user's message to all users, as per live chat
+    broadcast(new ChatMessage(['username' => auth()->user()->name, 'textvalue' => strip_tags($request->textvalue), 'avatar' => auth()->user()->avatar]))->toOthers();
+    return response()->noContent();
+})->middleware('mustBeloggedIn');
+
 
 Route::delete('/post/{post}', [PostController::class, "deletePost"])->middleware('can:delete,post');
 

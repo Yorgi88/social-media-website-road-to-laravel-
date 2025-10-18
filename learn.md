@@ -1826,8 +1826,131 @@ next we go into the Listener file and say
         Log::debug('The user: {$event->username} just performed an {$event->action}');
     }
 lets test 
+you see something like : [2025-10-17 05:44:31] local.DEBUG: The user: Bob just did login 
+
+that means bob just loged in
+
+-- > Now on to the broadcasting
+
+think of it as a one-to-mamy connection
+
+data is sent from one source to many destinations
+
+to get started, go to pusher.com and create a free account
+
+--> go to your .env file set the BROADCAST_CONNECTION TO pusher
 
 
+we will add more variables
+
+go to the laravel official docs
+
+-> follow this link:  https://laravel.com/docs/11.x/broadcasting#pusher-channels
+
+copy the channel credentials and paste in the env file
+
+PUSHER_APP_ID="your-pusher-app-id"
+PUSHER_APP_KEY="your-pusher-key"
+PUSHER_APP_SECRET="your-pusher-secret"
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME="https"
+PUSHER_APP_CLUSTER="mt1"
+
+in your pusher account, create a chanell, you can call it laravel live search or anything
+choose us3 in the region aspect, leave everything else as default
+
+then you'd see a section called app keys, click on that and get the required env params
+
+next we need to install a package called power pusher
+
+so run the command `composer require pusher/pusher-php-server `
+
+after, run this command: `php artisan install:broadcasting `
+in the second question you'd see in the terminl, something about node dependencies, answer yes not no
+
+-> next, lets set up the route, go to web.php and do that
+
+Route::post('/send-chat-message', function(Request $request){
+    $formFields = $request->validate([
+        'textvalue' => 'required'
+    ]);
+
+    //trim white spaces and strip out tags
+    if (!trim(strip_tags($formFields['textvalue']))) {
+        # code...
+        return response()->noContent();
+    }
+
+    //if not, broadcast the user's message to all users, as per live chat
+    broadcast();
+})->middleware('mustBeloggedIn');
+
+
+we need to make an event first then we'll update that broadcast() aspect of the code
+
+so run the command: `php artisan make:event ChatMessage `
+
+-> we do not need to create a listener this time around
+
+so go back to the web.php in the route for the chat feature and update
+
+we just want the event created to be broadcasted, so go to the ChatMessage file
+import this use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+
+and implement it in the class
+
+see the file->
+
+see the ChatMessage.php file and read through
+
+
+--> go to channels.php to set up a new channel
+
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
+
+Broadcast::channel('chatchannel', function(){
+    //allow any logged in user to have access
+    if (auth()->check()) {
+        # code...
+        return true;
+    }
+    return false;
+})
+
+now lwts connect the dots using client side js and our live broadcasting feature
+
+
+lets get the js part set up in the famous Html template in your Downloods folder, look for the chat.js file
+
+copy it and paste it in chat.js -> create the file in resources dir
+
+go into the app.js and import it : import Chat from './chat';
+
+if (document.querySelector('.header-chat-icon')) {
+    new Chat();
+}
+
+go to bootstrap.js and remove this: import './echo';
+
+go to echo.js , copy all the contents and paste in the bootstrap.js
+
+MAKE SOME CHANGES in the bootstrap js file, -> see the file
+
+go to layout.blade file: 
+
+      @auth
+          <div id="chat-wrapper" class="chat-wrapper shadow border-top border-left border-right" data-username="{{auth()->user()->name}}" data-avatar="{{auth()->user()->avatar}}">
+
+          </div>
+      @endauth
+
+add this to the env file to be used by the frontend
+
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
 
 
 
