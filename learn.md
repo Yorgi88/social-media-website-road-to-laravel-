@@ -1953,11 +1953,97 @@ VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
 VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
 
 
+run `npm run build` => 
 
 
 
 
 
+
+--------------------
+LIVEWIRE INTRO
+#
+-------------------
+
+
+
+WE WILL NEED IT FOR OUR CHAT FEATURE AND SEARCH FEATURE
+
+livewire enables persistence, so even in the chat app, you won't lose your chat app
+
+to install `composer require livewire/livewire `
+
+now lets create a component for the search feature
+# type this `php artisan make:livewire search `
+
+this did two tinz, in our app dir, we now have a livewire dir that contains Search.php
+
+
+and in the views template, there is a livewire dir with blade.php file (search.blade.php)
+
+a live wire component can only have one top level element
+
+lets test, in the search.blade file
+
+add a paragraph tag to and write hello world
+
+so go to the layout.blade file and try to pull in our livewire
+
+        <div class="flex-row my-3 my-md-0">
+          <livewire:search/>
+we run it and we see the hello world in the nav bar section
+
+with this, we won't need to write any javascript
+
+, now lets replace that hello world we typed with an input field, for the search icon
+
+lets just focus on the core implementation for now
+
+so go back to the search.blade file and add an input there
+
+<input type="text" wire:model.live="searchTerm"> the '.live' means it now connected to the live server of Search.php in the livewire dir in the app dir
+
+<?php
+
+namespace App\Livewire;
+use App\Models\Post;
+use Livewire\Component;
+
+class Search extends Component
+{
+    public $searchTerm = "";
+    public $results; 
+    public function render()
+    {
+        if ($this->searchTerm == '') {
+            $this->results = array(); //meaning the user hasn't typed anything yet
+        }else {
+            //search the database for any blog posts
+            $posts = Post::search($this->searchTerm)->get();
+            $this->results = $posts;
+        }
+        return view('livewire.search');
+    }
+}
+
+
+next go to the search.blade.php and update
+
+<div>
+    {{-- If your happiness depends on money, you will never be happy with yourself. --}}
+    <input type="text" wire:model.live="searchTerm">
+    @if (count($results) > 0)
+        @foreach ($results as $post)
+            <li>{{$post->title}}</li>
+        @endforeach
+    @endif
+</div>
+
+we test it and it works!
+
+this is some asynchronous type shit! mehn
+
+now lets now worry about the styling
 
 
 
