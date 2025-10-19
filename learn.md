@@ -2045,6 +2045,66 @@ this is some asynchronous type shit! mehn
 
 now lets now worry about the styling
 
+now lets disable the javascript search feature
+
+go to the app.js and disable: comment out the "new Search()"
+
+go to the livewire blade file in the search.blade.php -> 
+
+next, we need to find the search icon, so go to the layout.blade file
+
+copy the anchor search tag:
+
+          <a href="#" class="text-white mr-2 header-search-icon" title="Search" data-toggle="tooltip" data-placement="bottom"><i class="fas fa-search"></i></a>
+and paste in the search.php
+
+lets change the anchor tag into a button elem
+
+we need some html templates, so go to the live_search.js file and get the template and then paste in the search.blade file
+
+      `<div class="search-overlay">
+    <div class="search-overlay-top shadow-sm">
+      <div class="container container--narrow">
+        <label for="live-search-field" class="search-overlay-icon"><i class="fas fa-search"></i></label>
+        <input autocomplete="off" type="text" id="live-search-field" class="live-search-field" placeholder="What are you interested in?">
+        <span class="close-live-search"><i class="fas fa-times-circle"></i></span>
+      </div>
+    </div>
+
+    <div class="search-overlay-bottom">
+      <div class="container container--narrow py-3">
+        <div class="circle-loader"></div>
+        <div class="live-search-results"></div>
+      </div>
+    </div>
+  </div>
+
+  now wen we click on the search btn, like a well-designed input field should pup up
+
+  we want to make this feature conditional
+
+  that's where Alpine.js comes in
+
+  how to activate?
+
+  in the div you copied from the live-search js file
+
+  pass in some data in the outer div <x-data> in the search.blade file
+
+  <div x-data="{ isOpen:false }">
+
+  so in the button element, add this: x-on:click="isOpen = true" 
+
+  now we want to make the div element: <div class="search-overlay"> to receive the data so in the div add this: <div class="search-overlay" x-bind:class="isOpen ? 'search-overlay--visible' : '' ">
+
+  it works, now lets work on the X feature go cancel or close the overlay
+
+  so in the span element add this x-on:click="isOpen = false"
+
+  it works!
+
+  
+
 
 
 
