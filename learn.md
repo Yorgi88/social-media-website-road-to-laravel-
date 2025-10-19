@@ -2103,7 +2103,81 @@ we need some html templates, so go to the live_search.js file and get the templa
 
   it works!
 
-  
+  ---------------
+
+Next -> lets actully build the functionality, we wanna actually bring it to life
+
+so in the search.blade file, look for this input elem
+        <input autocomplete="off" type="text" id="live-search-field" class="live-search-field" placeholder="What are you interested in?">
+
+add some stuff to it: wire:model.live.debounce.450ms="searchTerm" 
+
+the debounce part means, when the user stops typing, wait for like 4 secs before producing the results
+
+so to actually implement the result logic of the search, in the search.blade file we add:
+
+were you see the live-search-result div
+
+we added a bunch of stuff from the live_search js file, so in the search.blade file here it is
+
+        <div class="live-search-results live-search-results--visible">
+            <div class="list-group shadow-sm">
+                <div class="list-group-item active"><strong>Search Results</strong>
+                    ({{count($results)}} {{count($results) > 1 ? "results" : "result"}} found)
+                </div>
+            @foreach ($results as $post)
+            <a href="/post/{{$post->id}}" class="list-group-item list-group-item-action">
+                <img class="avatar-tiny" src="{{$post->user->avatar}}"> <strong>{{$post->title}}</strong>
+                <span class="text-muted small">by {{$post->user->name}} on {{$post->created_at->format('n/j/Y')}}</span>
+            </a>
+            @endforeach
+        </div>
+        </div>
+
+we want to make tis part conditional: 
+
+                <div class="list-group-item active"><strong>Search Results</strong>
+                    ({{count($results)}} {{count($results) > 1 ? "results" : "result"}} found)
+                </div>
+
+should only appear after the user types
+
+if its not found, we'll see 0 results found will be displayed in red
+
+so in the search.blade file:
+
+above the list-group div section we say
+
+            @if (count($results) == 0 && $searchTerm !== "")
+                <p id="no-results" class="alert alert-danger text-center shadow-sm">No results found</p>
+            @endif
+
+            @if (count($results) > 0)
+            <div class="list-group shadow-sm">
+                <div class="list-group-item active"><strong>Search Results</strong>
+                    ({{count($results)}} {{count($results) > 1 ? "results" : "result"}} found)
+                </div>
+            @foreach ($results as $post)
+            <a href="/post/{{$post->id}}" class="list-group-item list-group-item-action">
+                <img class="avatar-tiny" src="{{$post->user->avatar}}"> <strong>{{$post->title}}</strong>
+                <span class="text-muted small">by {{$post->user->name}} on {{$post->created_at->format('n/j/Y')}}</span>
+            </a>
+            @endforeach
+        </div>
+     @endif
+
+    --> see the search.blade file to understand the code better
+
+
+-> next, we wanna add a spinner loader
+
+
+        <input x-on:keydown="document.querySelector('.circle-loader').classList.add('circle-loader--visible')" wire:model.live.debounce.450ms="searchTerm" autocomplete="off" type="text" id="live-search-field" class="live-search-field" placeholder="What are you interested in?">
+
+
+
+->
+
 
 
 
