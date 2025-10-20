@@ -7,6 +7,6 @@ if (document.querySelector('.header-search-icon')) {
 }
 
 if (document.querySelector('.header-chat-icon')) {
-    new Chat();
+    //new Chat();
 }
 

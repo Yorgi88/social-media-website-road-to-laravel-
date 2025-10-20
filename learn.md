@@ -2176,7 +2176,51 @@ above the list-group div section we say
 
 
 
-->
+=========================================
+-> Next we want to re-implement live chat feature this time using live-wire
+
+============================================
+
+we want to make our live chat persist, so no matter the window or route we're in the data won't be lost
+
+so in the command, type in `php artisan make:livewire chat ` -> this will create a Chat.php in the app dir and a chat.blade.php in the views dir
+
+go to the app.js and comment the new Chat(); part
+after, run =>  npm run build
+
+we want to recreate the feature using livewire
+
+so in the layout.blade file, cut out the part of the chat icon 
+its wrapped in a span element. Also, scroll down and copy the chat pop up elem and paste that also in the chat.blade.php
+
+paste it in the chat.blade.php -> 
+
+now lets pass in data in the parent div
+
+we want a functionality whereby when the chat icon is clicked, a chat window pops up
+
+<div x-data="{ isOpen: false}">
+
+ <span x-on:click="isOpen = true"
+
+<div id="chat-wrapper" x-bind:class="isOpen ? 'chat--visible' : '' " 
+
+
+next we need to go into our old chat.js file to get the remaining parts
+
+after that we need to add some animations especially the transition part 
+
+so add this: chat-wrapper--ready  in the div class of chat-wrapper
+
+next, we work on the closing chat functionality
+
+<span x-on:click="isOpen = false"
+
+
+we use this: <span x-on:click="isOpen = true; document.querySelector('.chat-field').focus()"
+so when we click on the chat, the ui is directly focused in the input field
+
+
 
 
 
