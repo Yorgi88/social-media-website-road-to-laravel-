@@ -2221,6 +2221,80 @@ we use this: <span x-on:click="isOpen = true; document.querySelector('.chat-fiel
 so when we click on the chat, the ui is directly focused in the input field
 
 
+=========================
+Next we are connecting the live chat to livewire
+
+so go pto the Chat.php file where the actual php livewire code is
+
+    public $textvalue = "";
+    public chatLog = array();
+
+    public function send(){
+        //we want to make sure only authorized users can send chat
+        if (!auth()->check()) {
+            # code...
+            abort(403, 'Unauthorized');
+        }
+
+        if (trim(strip_tags($this->textvalue)) == '') {
+            # a user can just hit enter without tyoing anything,, this if block takes care of that
+            return;
+        }
+
+        //if nothing else, we push the msg into the array
+        array_push($this->chatLog, ['selfmessage' => true, 'username' => auth()->user()->name, 'textvalue' => strip_tags($this->textvalue), 'avatar' => auth()->user()->avatar]);
+        //if the user is the one that sent the message, the ui will display blue meaning self
+        //if its another user in the chat it will be in gray color form
+    }
+
+take a look at the code and read through
+
+now lets work on the blade template side, go to the chat.blade file
+<form wire:submit="send"  //send as in the name of the method we created in the Chat.php
+<input wire:model="textvalue"
+
+            <div id="chat" class="chat-log">
+                <!-- this div is where we will loop through and display all the msgs
+                see the chat.blade file for more -->
+            </div>
+
+see -> the file chat.blade.php
+=======================
+
+        $this->textvalue = '';
+        //wen a user types a msg and hit enter, the text in the input field should disappear
+
+now lets start broadcasting the msgs to every other user
+
+so in the Chat.php: 
+ broadcast(new ChatMessage(['selfmessage' => false, 'username' => auth()->user()->name, 'textvalue' => strip_tags($this->textvalue), 'avatar' => auth()->user()->avatar]))->toOthers();
+
+ now we need to create a listener to listen for incoming broadcasts
+
+ so in the Chat.php -livewire server component file
+
+ create a method called getListeners --it has to be named this way, else it won't work
+
+ the whole code:
+
+     public function getListeners(){
+        return [
+            "echo-private:chatchannel.ChatMessage" => "notifyNewMessage"
+        ];
+    }
+
+    public function notifyNewMessage($x){
+        //to receive the incoming chat msg
+        array_push($this->chatLog, $x['chat']);
+    }
+
+go to ChatMessage.php and add the selfmessage associative array to the __construct method
+
+now we include in our chat.blade file
+
+in the else: block side of things is where we will paste the html 
+
+
 
 
 

@@ -23,7 +23,7 @@ class ChatMessage implements ShouldBroadcastNow
     {
         // tis will repr the incoming data for the event
         $this->chat = [
-            'username' => $chat['username'], 'avatar' => $chat['avatar'], 'textvalue' => $chat['textvalue']
+            'username' => $chat['username'], 'avatar' => $chat['avatar'], 'textvalue' => $chat['textvalue'], 'selfmessage' => $chat['selfmessage']
         ];
     }
 
