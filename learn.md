@@ -2351,6 +2351,177 @@ wire:model="title", wire:model="body"
 
 so in the livewire CreatePost server component, we create a method called 'create'
 
+we went to the post controller, in the storeNewPost method and copied the code
+
+pasted it in the CreatePost livewire server comp
+
+we also made a few changes we used $this-> instead of $request
+
+and in liveserver, we do not return redirect() -> directly we do this instead
+
+        session()->flash('success', 'post created successfully');
+        return $this->redirect("/post/{$newPost->id}", navigate:true);
+
+========================
+Next, we are gonna ensure persistence throughout the rest of the app, the followers, the following, the avatar feature and the rest, so if we click on the chat icon at any of these, it will still persists
+
+
+-> so first, lets start with delete and edit post all re-made in livewire
+
+so in the terminal, `php artisan make:livewire deletepost `
+
+so in the single-post blade file, cut out this part:
+
+          <form class="delete-post-form d-inline" action="/post/{{$post->id}}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button class="delete-post-button text-danger" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash"></i></button>
+          </form>   => paste it in the deletepost.blade file in the livewire dir
+
+and replace it with <livewire:delete/>
+
+we run into an error undefined variable $post, so i think in the single-post blade file we should pass in some props in the livewire comp <livewire:delete :post="$post" />
+
+after go into your Livewire DeletePost server component and say : public $post;
+
+next, in the DeletePost file
+
+we say:     public function delete(){
+        
+    }
+so in the livewire deletepost blade file, we add this: wire:submit="delete" to the form element
+
+next in the DeletePost  we say: 
+
+    public function delete(){
+        //check if the user is authorized to delete
+        $this->authorize('delete', $this->post);
+        $this->post->delete();
+
+        session()->flash('success', 'post deleted');
+        return $this->redirect('/profile/' . auth()->user()->name, navigate:true);
+    }
+
+
+-> moving on to the edit feature
+
+-> in the single-post blade file in the edit anchor tag, add: wire:navigate to the anchor tag
+
+next, create the livewire comp for edit
+
+`php artisan make:livewire editpost  `
+
+next, go to the edit-post blade file and cut out the form element and paste it in the editpost livewire blade file replace what you cut out with <livewire:editpost />
+
+do not forget to pass in the prop in the <livewire:editpost :post="$post"  />
+
+next -> in the EditPost livewire server comp, add this
+
+now code the submit logic of the edit post
+
+in the editpost livewire blade file, add this to the form elem: <form wire:submit="saveEdit"
+also add the `wire:model` to the title and body fields
+
+go to the liveserver component for the edit and create a method called saveEdit
+
+
+    public $post;
+    public $title;
+    public $body;
+
+    public function saveEdit(){
+        $incomingFields = $this->validate([
+            'title' => 'required',
+            'body' => 'required'
+        ]);
+        $incomingFields['title'] = strip_tags($incomingFields['title']);
+        $incomingFields['body'] = strip_tags($incomingFields['body']);
+        //we need to check if user is authorized
+        $this->authorize('update', $this->post);
+        $this->post->update($incomingFields);
+
+        session()->flash('success', 'post updated successfully');
+        $id = $this->post->id;
+        return $this->redirect("/post/$id/edit", navigate:true);
+    }
+
+    wen we click the edit btn we see the edit data that we wanna edit is lost, in the the traditional way we used {{old()}} but in live wire , create a method called 
+
+# mount
+
+    public function mount(){
+        $this->title = $this->post->title;
+        $this->body = $this->post->body;
+    }
+    
+next is the follow and unfollow feature
+
+we want to ensure persistence
+
+so use the command `php artisan make:livewire follow `
+
+`php artisan make:livewire unfollow `
+
+next go to the profile.blade template and copy the form that points to the FOLLOW feature:
+
+            <form class="ml-2 d-inline" action="/create-follow/{{$sharedData['name']}}" method="POST">
+              @csrf
+              <button class="btn btn-primary btn-sm">Follow <i class="fas fa-user-plus"></i></button>
+          <!-- <button class="btn btn-danger btn-sm">Stop Following <i class="fas fa-user-times"></i></button> -->
+            </form> --> paste in the follow.blade.php 
+    
+replace with  <livewire:follow />
+
+--> do the same thing for the unfollow part
+
+add a `wire:submit` to each follow and unfollow blade files
+
+next, pass in the data in the livewire comp: <livewire:follow  :name="$sharedData['name']"/> , <livewire:unfollow :name="$sharedData['name']" />go
+
+
+next, go into the Server side of the Follow.php in the livewire dir in the app dir
+
+and create the method, the method name must rhyme with the what you named the wire:submit
+
+we changed the Follow.php livewire file to UserFollow, we also changed the livewire blade component too
+
+here is the UserFollow code:
+
+    public $name;
+    
+    public function follow() {
+        if (!auth()->check()) {
+            abort(403, 'Not authorized');
+        }
+        //we got the code from the FollowController
+
+        $user = User::where('name', $this->name)->first();
+
+        if ($user->id == auth()->user()->id) {
+            # code...
+            return back()->with('error', 'you cannot follow yourself');
+        }
+        //u cannot follow someone you're already following
+        $existCheck = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
+        if ($existCheck) {
+            # code...
+            return back()->with('error', 'you are already following this user');
+            
+        }
+        $newFollow = new Follow();
+        $newFollow->user_id = auth()->user()->id;
+        $newFollow->followeduser = $user->id;
+        $newFollow->save();
+
+        session()->flash('success', 'user followed');
+
+        return $this->redirect("/profile/{$this->name}", navigate:true);
+    }
+
+
+
+
+
 
 
 
