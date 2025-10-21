@@ -2279,7 +2279,7 @@ so in the Chat.php:
 
      public function getListeners(){
         return [
-            "echo-private:chatchannel.ChatMessage" => "notifyNewMessage"
+            "echo-private:chatchannel,ChatMessage" => "notifyNewMessage"
         ];
     }
 
@@ -2293,6 +2293,64 @@ go to ChatMessage.php and add the selfmessage associative array to the __constru
 now we include in our chat.blade file
 
 in the else: block side of things is where we will paste the html 
+
+
+--> Next, we want to turn our app into a single page app (SPA) and by doing that, we want to make our chat persists so if you click something else the chat's data isn't lost
+
+so for starters, go to the the layout.blade.php
+
+around where the 'ourApp' is located
+
+add this to the anchor tag: <a wire:navigate
+
+for this to work, make sure you have a livewire component in that file, in our case, we do
+
+          <livewire:search/>
+          <livewire:chat/>
+
+next, wrap the livewire components in the @persist()
+
+so do that for the rest of the links in the nav sections
+
+
+something happens in the post.blade.php
+
+when we added the wire:navigate to it, in the ui, the edit and delete icons disappear, they only appear wen we reload, so to fix that, we went to the layout blade file and copied the script snippet
+
+    <script defer src="https://use.fontawesome.com/releases/v5.5.0/js/all.js" integrity="sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0" crossorigin="anonymous"></script>
+
+and pasted it in the chat.blade.php and paste it in
+
+next lets add some persistency to the search feature, when we click on search icom
+
+and we see the ui, when we search for a post, we want the overlay to close immediately we click on the post we want, we also want the livechat persistence
+
+so, in the search.blade.php add this to the anchor tag: <a x-on:click.prevent=""
+<a x-on:click.prevent="isOpen = false; Livewire.navigate('/post/{{$post->id}}')"
+
+this prevent defaulut behavior that happens when u click on that very link
+
+
+next, we want to do the same for the create post blade
+
+we have added the wire:navigate in the layout blade file
+
+for the persistence, we will need to convert that create-post blade file into livewire component
+
+so in the terminal run `php artisan make:livewire createpost `
+
+in the create post blade file, copy the form component only and paste in the livewire create post blade file 
+after add the component <livewire:createpost> in the create-post blade file 
+
+so next, in the livewire create post blade file, in the form tag we added: 
+
+<form wire:submit="create"
+after, add this to the title and body field, that is, the input and textarea field
+
+wire:model="title", wire:model="body"
+
+so in the livewire CreatePost server component, we create a method called 'create'
+
 
 
 
