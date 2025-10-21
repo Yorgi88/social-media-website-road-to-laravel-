@@ -11,7 +11,7 @@
             <livewire:unfollow :name="$sharedData['name']" />
         @endif
             @if (auth()->user()->name == $sharedData['name'])
-              <a href="/manage-avatar" class="btn btn-secondary btn-sm">Manage Avatar</a>
+              <a wire:navigate href="/manage-avatar" class="btn btn-secondary btn-sm">Manage Avatar</a>
             @endif
         @endauth
 

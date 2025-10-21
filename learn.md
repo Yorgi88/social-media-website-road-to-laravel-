@@ -2519,8 +2519,64 @@ here is the UserFollow code:
     }
 
 
+--> Next, lets move to the Unfollow aspect using live wire and ensuring persistence
+
+just perform the same steps for the unfollow part
+
+get most of the code from the FollowController
+
+    public $name;
+    
+
+    public function unfollow(){
+        //check if user is authd
+        if (!auth()->check()) {
+            # code...
+            abort(403, 'Not Authorized');
+        }
+        $user = User::where('name', $this->name)->first();
+        Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=' , $user->id]])->delete();
+        session()->flash('success', 'You unfollowed this user');
+        return $this->redirect("/profile/{$this->name}", navigate:true);
+    }
 
 
+next, is the manage avatar feature
+
+go tp profile.blade.php
+
+add this to the anchor tag that target the /manage/avatar route
+
+<a wire:navigate
+
+we want to ensure persistence so that if we change avatar, the chats and all will still persists
+as per SPA
+
+so next create the livewire comp for it
+
+`php artisan make:livewire avatarupload `
+
+next, go to to the avatar-form blade file cut the <form></form> elems only and paste in the livewire blade file
+
+replace what you cut with <livewire:avatarupload />
+
+in the avatarupload blade file, add the wire:submit to the form elem
+also add this to the input tag: <input wire:model="avatar" 
+
+next, go to the Livewire server comp for the avatarupload
+
+and code up the logic
+
+
+SCRATCH THAT ---
+
+
+
+===============================
+
+SENDING EMAILS
+
+==============
 
 
 
