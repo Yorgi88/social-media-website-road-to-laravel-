@@ -2578,6 +2578,52 @@ SENDING EMAILS
 
 ==============
 
+we did not attempt this course, it's sorta outdated, i ran into many issues, so i moved on to caching
+
+
+=======================
+CACHING
+=============
+
+Lets say we want to add this feature of the total number of post all users have made combined
+
+the idea will be whenever the users load up the page, we run the sql and the backend service every time the page loads up, concerning that feature
+
+
+That's when caching comes in, with caching we won't have to always call and backend for the feature
+
+this way its efficient,think of it as storing frequently used data
+
+so go intp the homepage.blade file, not homepage-logged
+
+add this:  <p>Our users have authored {{$postCount}} posts in total</p>
+
+now to the user controller file and look for it, i think we had a method for it for the homepage.blade file
+#
+
+ <p>Our users have authored {{$postCount}} posts in total</p>
+
+ return view('homepage', ['postCount' => Post::count()]);
+
+ now we want to implement caching- >
+
+  $postCount = Cache::remember(a, b, c);
+
+  the remember() will take three things ->
+  a => key or the label in the cache, in our case its postCount
+
+  b => is the duration that you want it to remember, lets set it to 20 secs
+
+  c => third is a function that will only run if the data does not exist in cache
+
+  -->
+
+
+  ----------------------------
+    NEXT IS API
+  ----------------------
+We should know how to send data inform of RESTApi, or maybe gRPC, lol
+
 
 
 

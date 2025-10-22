@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Post;
 use App\Models\Follow;
 use App\Events\OurExampleEvent;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,11 @@ class UserController extends Controller
             return view('homepage_logged', ['posts' => auth()->user()->feedPosts()->latest()->paginate(4)]);
         } else {
             # code...
-            return view('homepage');
+            $postCount = Cache::remember('postCount', 20, function(){
+                sleep(5);
+                return Post::count();
+            });
+            return view('homepage', ['postCount' => Post::count()]);
         }
         
     }
