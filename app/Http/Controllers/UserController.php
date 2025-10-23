@@ -151,6 +151,22 @@ class UserController extends Controller
         return view('profile-following', ['posts' => $user->posts()->latest()->get(), 'avatar'=> $user->avatar, 'following' => $user->followingTheseUsers()->latest()->get()]);
 
     }
+
+    public function loginApi(Request $request){
+        $incomingFields = $request->validate([
+            'login_name' => 'required',
+            'login_password' => 'required'
+        ]);
+
+        if (auth()->attempt($incomingFields)) {
+            # code...
+            $user = User::where('name', $incomingFields['login_name'])->first();
+            $token = $user->createToken('ourapptoken')->plainTextToken;
+            return $token;
+
+        }
+        return '<h2>Error</h2>';
+    }
 }
 
 

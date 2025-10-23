@@ -2625,7 +2625,51 @@ now to the user controller file and look for it, i think we had a method for it 
 We should know how to send data inform of RESTApi, or maybe gRPC, lol
 
 
+We are gonna gonna learn more about APIs 
 
+we shall implement it in the login, create post and edit post feature, stay tuned
+
+download insomnia rest on your laptop `insomnia.rest/download `
+
+run the command php artisan install:API
+
+durung the installation, you'll get prompted to migrate, type in yes
+
+then import the HasApiTokens in the user model -> you should be good
+
+a file called api.php is already created so go to the file to create our api
+
+Route::post('/login', [UserController::class, 'loginApi'])
+
+so go to the user controller and write the method 
+
+
+    public function loginApi(Request $request){
+        $incomingFields = $request->validate([
+            'login_name' => 'required',
+            'login_password' => 'required'
+        ]);
+
+        if (auth()->attempt($incomingFields)) {
+            # code...
+            $user = User::where('name', $incomingFields['login_name']);
+            $token = $user->createToken('ourapptoken')->plainTextToken;
+            return $token;
+
+        }
+        return '<h2>Error</h2>';
+    }
+
+go to insomnia to test
+
+in the insomnia app, click on
+
+
+next lets create a route to let logged users to create a new post
+
+so go to api.php and do that, and create the method for it in the PostController and test
+
+----
 
 
 

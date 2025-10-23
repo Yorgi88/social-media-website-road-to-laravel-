@@ -64,4 +64,21 @@ class PostController extends Controller
         return $posts;
     }
 
+
+    public function storeNewPostApi(Request $request){
+        $incomingFields = $request->validate([
+            'title' => 'required',
+            'body' => 'required'
+        ]);
+
+        // we want to strip out any html tag an attacker might take advantage of
+        $incomingFields['title'] = strip_tags($incomingFields['title']);
+        $incomingFields['body'] = strip_tags($incomingFields['body']);
+
+        $incomingFields['user_id'] = auth()->id();  //to get the userid of the poster
+
+        $newPost = Post::create($incomingFields);
+        return $newPost->id;
+    }
+
 }
